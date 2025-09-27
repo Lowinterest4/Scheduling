@@ -133,22 +133,6 @@
     let timeSlots = ["8:00-9:00", "9:00-10:00", "10:00-11:00", "11:00-12:00", "1:00-2:00", "2:00-3:00"];
     let editMode = false;
 
-    // ========= LOCAL STORAGE HELPERS =========
-    function saveData() {
-      localStorage.setItem("subjects", JSON.stringify(subjects));
-      localStorage.setItem("professors", JSON.stringify(professors));
-      localStorage.setItem("rooms", JSON.stringify(rooms));
-    }
-
-    function loadData() {
-      let savedSubjects = localStorage.getItem("subjects");
-      let savedProfessors = localStorage.getItem("professors");
-      let savedRooms = localStorage.getItem("rooms");
-
-      if (savedSubjects) subjects = JSON.parse(savedSubjects);
-      if (savedProfessors) professors = JSON.parse(savedProfessors);
-      if (savedRooms) rooms = JSON.parse(savedRooms);
-    }
 
     function updateList(listId, dataArray, prefix = "") {
       let list = document.getElementById(listId);
@@ -297,3 +281,4 @@
 
 </body>
 </html>
+
