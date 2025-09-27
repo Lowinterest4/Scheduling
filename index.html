@@ -109,8 +109,8 @@
   <p><strong>Rooms:</strong></p>
   <ul id="roomList"></ul>
 
-  <button onclick="generateSchedule()">Generate Schedule</button>
-  <button onclick="toggleEditMode()" id="editBtn" style="background:#ffc107;">Enable Edit Mode</button>
+  <button id="generateBtn">Generate Schedule</button>
+  <button id="editBtn" style="background:#ffc107;">Enable Edit Mode</button>
 
   <table id="scheduleTable">
     <thead>
@@ -133,6 +133,23 @@
     let timeSlots = ["8:00-9:00", "9:00-10:00", "10:00-11:00", "11:00-12:00", "1:00-2:00", "2:00-3:00"];
     let editMode = false;
 
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem("subjects", JSON.stringify(subjects));
+      localStorage.setItem("professors", JSON.stringify(professors));
+      localStorage.setItem("rooms", JSON.stringify(rooms));
+    }
+
+    // Load saved data
+    function loadData() {
+      subjects = JSON.parse(localStorage.getItem("subjects")) || [];
+      professors = JSON.parse(localStorage.getItem("professors")) || [];
+      rooms = JSON.parse(localStorage.getItem("rooms")) || [];
+
+      updateList("subjectList", subjects, "subjects");
+      updateList("professorList", professors, "professors");
+      updateList("roomList", rooms, "rooms");
+    }
 
     function updateList(listId, dataArray, prefix = "") {
       let list = document.getElementById(listId);
@@ -272,9 +289,27 @@
       }
     }
 
+    // Attach button events after DOM loads
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("addSubjectBtn").addEventListener("click", addSubject);
+      document.getElementById("removeSubjectBtn").addEventListener("click", removeLastSubject);
+      document.getElementById("clearSubjectBtn").addEventListener("click", clearSubjects);
+
+      document.getElementById("addProfessorBtn").addEventListener("click", addProfessor);
+      document.getElementById("removeProfessorBtn").addEventListener("click", removeLastProfessor);
+      document.getElementById("clearProfessorBtn").addEventListener("click", clearProfessors);
+
+      document.getElementById("addRoomBtn").addEventListener("click", addRoom);
+      document.getElementById("removeRoomBtn").addEventListener("click", removeLastRoom);
+      document.getElementById("clearRoomBtn").addEventListener("click", clearRooms);
+
+      document.getElementById("generateBtn").addEventListener("click", generateSchedule);
+      document.getElementById("editBtn").addEventListener("click", toggleEditMode);
+
+      // Load saved data at startup
+      loadData();
+    });
   </script>
 
 </body>
 </html>
-
-
