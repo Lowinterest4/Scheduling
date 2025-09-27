@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automatic Class Scheduler</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .input-box {
+      margin: 10px 0;
+    }
+
+    input, button {
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+      cursor: default;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    td.editable {
+      background: #fff8d6;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Automatic Class Scheduler</h1>
+
+  <!-- SUBJECT INPUT -->
+  <div class="input-box">
+    <input type="text" id="subjectInput" placeholder="Enter Subject">
+    <button id="addSubjectBtn">Add Subject</button>
+    <button id="removeSubjectBtn" style="background:#dc3545;">Remove Last</button>
+    <button id="clearSubjectBtn" style="background:#6c757d;">Clear All</button>
+  </div>
+  <p><strong>Subjects:</strong></p>
+  <ul id="subjectList"></ul>
+
+  <!-- PROFESSOR INPUT -->
+  <div class="input-box">
+    <input type="text" id="professorInput" placeholder="Enter Professor">
+    <button id="addProfessorBtn">Add Professor</button>
+    <button id="removeProfessorBtn" style="background:#dc3545;">Remove Last</button>
+    <button id="clearProfessorBtn" style="background:#6c757d;">Clear All</button>
+  </div>
+  <p><strong>Professors:</strong></p>
+  <ul id="professorList"></ul>
+
+  <!-- ROOM INPUT -->
+  <div class="input-box">
+    <input type="text" id="roomInput" placeholder="Enter Room">
+    <button id="addRoomBtn" style="background:#28a745;">Add Room</button>
+    <button id="removeRoomBtn" style="background:#dc3545;">Remove Last</button>
+    <button id="clearRoomBtn" style="background:#6c757d;">Clear All</button>
+  </div>
+  <p><strong>Rooms:</strong></p>
+  <ul id="roomList"></ul>
+
+  <button onclick="generateSchedule()">Generate Schedule</button>
+  <button onclick="toggleEditMode()" id="editBtn" style="background:#ffc107;">Enable Edit Mode</button>
+
+  <table id="scheduleTable">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Monday</th>
+        <th>Tuesday</th>
+        <th>Wednesday</th>
+        <th>Thursday</th>
+        <th>Friday</th>
+      </tr>
+    </thead>
+    <tbody id="scheduleBody"></tbody>
+  </table>
+
+  <script>
+    let subjects = [];
+    let professors = [];
+    let rooms = [];
+    let timeSlots = ["8:00-9:00", "9:00-10:00", "10:00-11:00", "11:00-12:00", "1:00-2:00", "2:00-3:00"];
+    let editMode = false;
+
+    // ========= LOCAL STORAGE HELPERS =========
+    function saveData() {
+      localStorage.setItem("subjects", JSON.stringify(subjects));
+      localStorage.setItem("professors", JSON.stringify(professors));
+      localStorage.setItem("rooms", JSON.stringify(rooms));
+    }
+
+    function loadData() {
+      let savedSubjects = localStorage.getItem("subjects");
+      let savedProfessors = localStorage.getItem("professors");
+      let savedRooms = localStorage.getItem("rooms");
+
+      if (savedSubjects) subjects = JSON.parse(savedSubjects);
+      if (savedProfessors) professors = JSON.parse(savedProfessors);
+      if (savedRooms) rooms = JSON.parse(savedRooms);
+    }
+
+    function updateList(listId, dataArray, prefix = "") {
+      let list = document.getElementById(listId);
+      list.innerHTML = "";
+      if (dataArray.length === 0) {
+        list.innerHTML = `<li>No ${prefix || "items"} added yet</li>`;
+      } else {
+        dataArray.forEach((item, i) => {
+          let li = document.createElement("li");
+          li.textContent = `${i + 1}. ${item}`;
+          list.appendChild(li);
+        });
+      }
+      saveData();
+    }
+
+    // SUBJECT FUNCTIONS
+    function addSubject() {
+      let subject = document.getElementById("subjectInput").value.trim();
+      if (!subject) return alert("Enter a subject!");
+      subjects.push(subject);
+      document.getElementById("subjectInput").value = "";
+      updateList("subjectList", subjects, "subjects");
+    }
+
+    function removeLastSubject() {
+      if (subjects.length > 0) {
+        subjects.pop();
+        updateList("subjectList", subjects, "subjects");
+      }
+    }
+
+    function clearSubjects() {
+      if (subjects.length > 0 && confirm("Clear all subjects?")) {
+        subjects = [];
+        updateList("subjectList", subjects, "subjects");
+      }
+    }
+
+    // PROFESSOR FUNCTIONS
+    function addProfessor() {
+      let professor = document.getElementById("professorInput").value.trim();
+      if (!professor) return alert("Enter a professor!");
+      professors.push(professor);
+      document.getElementById("professorInput").value = "";
+      updateList("professorList", professors, "professors");
+    }
+
+    function removeLastProfessor() {
+      if (professors.length > 0) {
+        professors.pop();
+        updateList("professorList", professors, "professors");
+      }
+    }
+
+    function clearProfessors() {
+      if (professors.length > 0 && confirm("Clear all professors?")) {
+        professors = [];
+        updateList("professorList", professors, "professors");
+      }
+    }
+
+    // ROOM FUNCTIONS
+    function addRoom() {
+      let room = document.getElementById("roomInput").value.trim();
+      if (!room) return alert("Enter a room!");
+      rooms.push(room);
+      document.getElementById("roomInput").value = "";
+      updateList("roomList", rooms, "rooms");
+    }
+
+    function removeLastRoom() {
+      if (rooms.length > 0) {
+        rooms.pop();
+        updateList("roomList", rooms, "rooms");
+      }
+    }
+
+    function clearRooms() {
+      if (rooms.length > 0 && confirm("Clear all rooms?")) {
+        rooms = [];
+        updateList("roomList", rooms, "rooms");
+      }
+    }
+
+    function generateSchedule() {
+      if (subjects.length === 0 || professors.length === 0 || rooms.length === 0) {
+        return alert("Please add at least one subject, professor, and room!");
+      }
+
+      let scheduleBody = document.getElementById("scheduleBody");
+      scheduleBody.innerHTML = "";
+
+      timeSlots.forEach(slot => {
+        let row = document.createElement("tr");
+
+        let timeCell = document.createElement("td");
+        timeCell.textContent = slot;
+        row.appendChild(timeCell);
+
+        for (let i = 0; i < 5; i++) {
+          let cell = document.createElement("td");
+          let randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+          let randomProfessor = professors[Math.floor(Math.random() * professors.length)];
+          let randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+          cell.textContent = `${randomSubject} (${randomProfessor}, Room ${randomRoom})`;
+          row.appendChild(cell);
+        }
+
+        scheduleBody.appendChild(row);
+      });
+    }
+
+    function toggleEditMode() {
+      editMode = !editMode;
+      let btn = document.getElementById("editBtn");
+      btn.textContent = editMode ? "Disable Edit Mode" : "Enable Edit Mode";
+
+      document.querySelectorAll("#scheduleBody td").forEach(cell => {
+        if (cell.cellIndex !== 0) { // skip time column
+          if (editMode) {
+            cell.classList.add("editable");
+            cell.addEventListener("click", editCell);
+          } else {
+            cell.classList.remove("editable");
+            cell.removeEventListener("click", editCell);
+          }
+        }
+      });
+    }
+
+    function editCell(event) {
+      let currentValue = event.target.textContent;
+      let newValue = prompt("Edit this cell:", currentValue);
+      if (newValue !== null && newValue.trim() !== "") {
+        event.target.textContent = newValue.trim();
+      }
+    }
+
+    // Load saved data when page opens
+    loadData();
+    updateList("subjectList", subjects, "subjects");
+    updateList("professorList", professors, "professors");
+    updateList("roomList", rooms, "rooms");
+  </script>
+
+</body>
+</html>
